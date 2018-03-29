@@ -133,31 +133,6 @@ class TelnetCLI:
         except exception.InvalidCommandException:
             return {'error_message': 'No vlan ' + str(vlan) + ' in switch.'}
 
-    # def get_vlan_port(self, vlan):
-    #     port_list = []
-    #
-    #     try:
-    #         if self.check_config_mode() is True:
-    #             self.connection.execute('do show vlan id ' + str(vlan))
-    #         else:
-    #             self.connection.execute('show vlan id ' + str(vlan))
-    #         result = self.connection.response
-    #         result = result[result.find('Ports') + 16: ]
-    #         position = result.find('Gi0/')
-    #
-    #         while position != -1:
-    #             if result[position + 5].isdigit():
-    #                 port_list.append(int(result[position + 4: position + 6]))
-    #             else:
-    #                 port_list.append(int(result[position + 4]))
-    #             result = result[position + 4:]
-    #             position = result.find('Gi0/')
-    #
-    #     except exception.InvalidCommandException:
-    #         pass
-    #
-    #     finally:
-    #         return port_list
 
     def delete_vlan(self, vlan):
         if vlan == 1:
