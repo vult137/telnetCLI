@@ -1,6 +1,5 @@
 import requests
 import json
-import re
 
 requests.packages.urllib3.disable_warnings()
 
@@ -40,6 +39,26 @@ class APICrestful(object):
         response = requests.get(url=url, headers=header, verify=False)
         return response.json()['response']
 
+    def get_devices_count(self):
+        if not self.ticket:
+            self.ticket = self.get_ticket()
+        header = {"content-type": "application/json", 'X-Auth-Token': self.ticket}
+        url = "https://" + self.controller + "/api/v1/network-device/count"
+        response = requests.get(url=url, headers=header, verify=False)
+        return response.json()['response']
+
+    def get_device_vlan_info(self, device_id):
+        if not self.ticket:
+            self.ticket = self.get_ticket()
+        header = {"content-type": "application/json", 'X-Auth-Token': self.ticket}
+        url = "https://" + self.controller + "/api/v1/network-device/" + device_id + '/vlan'
+
+        response = requests.get(url=url, headers=header, verify=False)
+        ret = response.json()['response']
+        if 'errorCode' in ret:
+            return
+        return ret
+
     def get_users(self):
         if not self.ticket:
             self.ticket = self.get_ticket()
@@ -56,7 +75,7 @@ class APICrestful(object):
         response = requests.get(url=url, headers=header, verify=False)
         return response.json()['response']
 
-    def get_topology_2(self):
+    def get_topology_nodes(self):
         if not self.ticket:
             self.ticket = self.get_ticket()
         url = "https://" + self.controller + "/api/v1/topology/physical-topology"
@@ -73,11 +92,9 @@ class APICrestful(object):
                 management_ip = n['ip']
 
                 link_list = []
-                find = 0
                 for i in r_json['response']['links']:
                     if 'startPortName' in i:
                         if i['source'] == n['id']:
-                            find += 1 if find == 0 else 0
                             for m in r_json['response']['nodes']:
                                 if m['id'] == i['target']:
                                     link_list.append({
@@ -96,3 +113,15 @@ class APICrestful(object):
                 })
 
         return net_nodes
+
+
+if __name__ == '__main__':
+    handler = APICrestful(controller='sandboxapic.cisco.com', auth={"username": "devnetuser", "password": "Cisco123!"})
+    handler.ticket = handler.get_ticket()
+    devices_list = handler.get_devices()
+    res_list = []
+    for device in devices_list:
+        if device['family'] == 'Switches and Hubs' or device['family'] == 'Routers':
+            res_list.append(handler.get_device_vlan_info(device['id']))
+    for ele in res_list:
+        print(ele)
